@@ -3,84 +3,19 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
+from scrape_gmgn import get_roi_winrate
 import time
 
 # Setup Chrome driver
 service = Service(ChromeDriverManager().install())
 options = webdriver.ChromeOptions()
-options.add_argument("--start-maximized")
+# options.add_argument("--start-maximized") # To open browser in real time
+options.add_argument("--headless")  # Run in background
+options.add_argument("--disable-blink-features=AutomationControlled")
+options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 driver = webdriver.Chrome(service=service, options=options)
-
-def get_roi_winrate(wallet_address):
-    """
-    Given a wallet address, open new tab, get ROI and Winrate from gmgn.ai, then close tab.
-    """
-    try:
-        original_window = driver.current_window_handle
-        # Open new tab
-        driver.execute_script("window.open('');")
-        WebDriverWait(driver, 10).until(EC.number_of_windows_to_be(2))
-
-        # Switch to the new tab
-        new_window = [window for window in driver.window_handles if window != original_window][0]
-        driver.switch_to.window(new_window)
-
-        # Now open gmgn.ai
-        gmgn_url = f"https://gmgn.ai/sol/address/{wallet_address}"
-        driver.get(gmgn_url)
-
-        # wait for full page to load
-        time.sleep(10)
-
-        try:
-            close_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "div.css-pt4g3d".replace(' ', '.')))
-            )
-            close_button.click()
-            print("Closed gmgn popup.")
-        except:
-            print("No gmgn popup appeared.")
-
-
-        try:
-            gmgn_modal_overlay = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "div.pi-modal-mask".replace(' ', '.')))
-            )
-
-            # Set display: none using JavaScript
-            driver.execute_script("arguments[0].style.display = 'none';", gmgn_modal_overlay)
-            print("Hided gmgn overlay.")
-        except:
-            print("No gmgn overlay appeared.")
-
-        try:
-            gmgn_modal = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "div.pi-modal-wrap.pi-modal-centered".replace(' ', '.')))
-            )
-
-            # Set display: none using JavaScript
-            driver.execute_script("arguments[0].style.display = 'none';", gmgn_modal)
-            print("Hided gmgn modal.")
-        except:
-            print("No gmgn modal appeared.")
-
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "css-1y0msoc"))
-        )
-
-        roi_element = driver.find_element(By.CLASS_NAME, "css-1y0msoc")
-        roi = roi_element.text.strip()
-
-        winrate_element = driver.find_element(By.CLASS_NAME, "css-1vihibg")
-        winrate = winrate_element.text.strip()
-
-        return roi, winrate
-    except Exception as e:
-        print(f"Error getting ROI/Winrate for {wallet_address}: {e}")
-        return None, None
 
 def collect_traders_from_birdeye(token_address):
 
@@ -110,11 +45,11 @@ def collect_traders_from_birdeye(token_address):
             print("No popup appeared.")
 
         # Wait for manual filter
-        time.sleep(10)
+        time.sleep(5)
 
         page_num = 1
 
-        while page_num <= 2:
+        while page_num <= 4:
             
             # Get table body rows
             rows = WebDriverWait(driver, 15).until(
@@ -132,25 +67,25 @@ def collect_traders_from_birdeye(token_address):
 
                     if trader_link:
                         trader_address = trader_link.split("/profile/")[1].split("?")[0]
-                        # roi, winrate = get_roi_winrate(trader_address)
+                        stats = get_roi_winrate(trader_address)
                         traders_data.append({
                             "Trader": trader_address,
-                            # "ROI": roi,
-                            # "Winrate": winrate
+                            "ROI": stats['roi'],
+                            "Winrate": stats['winrate']
                         })
-                        # print(f"Collected: {trader_address} | ROI: {roi} | Winrate: {winrate}")
                         print(f"Collected: {trader_address} |")
                 except:
                     print(f"Error processing row: {e}")
                     traders_data.append({
                         "Trader": "",
-                        # "ROI": None,
-                        # "Winrate": None
+                        "ROI": None,
+                        "Winrate": None
                     })
 
             print(f"Collected {len(traders_data)} trader address.")
 
             try:
+
                 # Pagination
                 pagination_div = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((
