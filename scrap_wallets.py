@@ -47,6 +47,7 @@ def collect_traders_from_birdeye(token_address):
         # Wait for manual filter
         time.sleep(5)
 
+        pages_ended = 0
         page_num = 1
 
         while page_num <= 4:
@@ -103,6 +104,7 @@ def collect_traders_from_birdeye(token_address):
                 # print(f"Next button: {next_button}")
 
                 if next_button.get_attribute("disabled") is not None:
+                    pages_ended = 0
                     print("Next button is disabled. Scraping finished.")
                     break
                 else:
