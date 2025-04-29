@@ -11,7 +11,13 @@ import time
 # Setup Chrome driver
 service = Service(ChromeDriverManager().install())
 options = webdriver.ChromeOptions()
-options.add_argument("--start-maximized")
+# options.add_argument("--start-maximized")
+# Setup Chrome driver with headless option
+options.add_argument("--headless")
+options.add_argument("--disable-gpu")
+options.add_argument("--window-size=1920,1080")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
 driver = webdriver.Chrome(service=service, options=options)
 
 def get_roi_winrate(wallet_address):
@@ -113,8 +119,9 @@ def collect_traders_from_birdeye(token_address):
         time.sleep(10)
 
         pages_ended = 0
+        page_num = 1
 
-        while pages_ended == 1:
+        while page_num <= 2:
             
             # Get table body rows
             rows = WebDriverWait(driver, 15).until(
