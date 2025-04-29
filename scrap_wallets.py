@@ -112,9 +112,9 @@ def collect_traders_from_birdeye(token_address):
         # Wait for manual filter
         time.sleep(10)
 
-        page_num = 1
+        pages_ended = 0
 
-        while page_num <= 2:
+        while pages_ended == 1:
             
             # Get table body rows
             rows = WebDriverWait(driver, 15).until(
@@ -168,6 +168,7 @@ def collect_traders_from_birdeye(token_address):
                 # print(f"Next button: {next_button}")
 
                 if next_button.get_attribute("disabled") is not None:
+                    pages_ended = 0
                     print("Next button is disabled. Scraping finished.")
                     break
                 else:
