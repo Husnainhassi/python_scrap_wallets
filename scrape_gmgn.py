@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import time
 
@@ -28,17 +29,22 @@ def get_roi_winrate(wallet_address):
         soup = BeautifulSoup(html, 'html.parser')
 
         winrate_div = soup.find(class_="css-1vihibg")
-        winrate_text = winrate_div.get_text(strip=True)
-        winrate_value = winrate_text.replace("%", "")
-        print('winrate =>', winrate_value)
-
+        if winrate_div:
+            winrate_text = winrate_div.get_text(strip=True)
+            winrate_value = winrate_text.replace("%", "")
+            print('winrate =>', winrate_value)
+        else:
+            raise ValueError("Winrate not found")
+        
         time.sleep(2)
 
-        roi_div = soup.find(class_="css-1y0msoc")
-        roi_text = roi_div.get_text(strip=True)
-        roi_value = roi_text.split("%")[0]
-        print('roi =>', roi_value)
-
+        roi_text = driver.find_element(By.XPATH, "//*[text()='7D Realized PnL']/following-sibling::div[1]")
+        if roi_text:
+            roi_value = roi_text.split("%")[0]
+            print('roi =>', roi_value)
+        else:
+            raise ValueError("ROI not found")
+        
         return {"roi": roi_value, "winrate": winrate_value}
 
     except Exception as e:
