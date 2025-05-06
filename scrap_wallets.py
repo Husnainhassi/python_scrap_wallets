@@ -106,9 +106,9 @@ if __name__ == "__main__":
             print("Manual filter applying time ended.")
 
             pages_ended = 0
-            page_num = 1
+            page_num = 3
 
-            while page_num <=1 :
+            while page_num <= 3 :
                 
                 # Get table body rows
                 rows = WebDriverWait(driver, 15).until(

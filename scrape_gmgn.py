@@ -26,7 +26,8 @@ def get_roi_winrate(wallet_address):
         # WINRATE
         winrate_value = 0
         try:
-            winrate_element = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "css-1vihibg")))
+            # winrate_element = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "css-1vihibg")))
+            winrate_element = driver.find_element(By.XPATH, "//*[text()='Win Rate']/following-sibling::div[1]")
             winrate_text = winrate_element.text.strip()
             winrate_value = winrate_text.replace("%", "")
             print('Winrate =>', winrate_value)
