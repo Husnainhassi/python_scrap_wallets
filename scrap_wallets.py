@@ -11,8 +11,8 @@ import time
 # Setup Chrome driver
 service = Service(ChromeDriverManager().install())
 options = webdriver.ChromeOptions()
-# options.add_argument("--start-maximized") # To open browser in real time
-options.add_argument("--headless")  # Run in background
+options.add_argument("--start-maximized") # To open browser in real time
+# options.add_argument("--headless")  # Run in background
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 driver = webdriver.Chrome(service=service, options=options)
@@ -44,13 +44,15 @@ def collect_traders_from_birdeye(token_address):
         except:
             print("No popup appeared.")
 
+        print("Waiting for manual filter...")
         # Wait for manual filter
-        time.sleep(5)
+        time.sleep(25)
+        print("Manual filter applying time ended.")
 
         pages_ended = 0
         page_num = 1
 
-        while page_num <= 4:
+        while pages_ended == 0:
             
             # Get table body rows
             rows = WebDriverWait(driver, 15).until(
@@ -104,7 +106,7 @@ def collect_traders_from_birdeye(token_address):
                 # print(f"Next button: {next_button}")
 
                 if next_button.get_attribute("disabled") is not None:
-                    pages_ended = 0
+                    pages_ended = 1
                     print("Next button is disabled. Scraping finished.")
                     break
                 else:
@@ -123,7 +125,7 @@ def collect_traders_from_birdeye(token_address):
     return traders_data
 
 if __name__ == "__main__":
-    token_address = '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr'
+    token_address = '5SrwudGa1RHndbveXW1obMvH51Gh9amRRuMoPdqZpump'
     traders_info = collect_traders_from_birdeye(token_address)
 
     if traders_info:

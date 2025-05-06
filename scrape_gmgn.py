@@ -1,7 +1,8 @@
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from bs4 import BeautifulSoup
 import time
 
 options = Options()
@@ -20,32 +21,33 @@ def get_roi_winrate(wallet_address):
         driver = webdriver.Chrome(options=options)
         driver.get(url)
 
-        # Wait for JavaScript to load
-        time.sleep(5)  # Adjust as needed
+        wait = WebDriverWait(driver, 5)
 
-        # Get the full rendered HTML
-        html = driver.page_source
-
-        soup = BeautifulSoup(html, 'html.parser')
-
-        winrate_div = soup.find(class_="css-1vihibg")
-        if winrate_div:
-            winrate_text = winrate_div.get_text(strip=True)
+        # WINRATE
+        winrate_value = 0
+        try:
+            winrate_element = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "css-1vihibg")))
+            winrate_text = winrate_element.text.strip()
             winrate_value = winrate_text.replace("%", "")
             print('winrate =>', winrate_value)
-        else:
+        except Exception:
             raise ValueError("Winrate not found")
         
-        time.sleep(2)
+        time.sleep(1)
 
-        roi_text = driver.find_element(By.XPATH, "//*[text()='7D Realized PnL']/following-sibling::div[1]")
-        if roi_text:
-            roi_value = roi_text.split("%")[0]
-            print('roi =>', roi_value)
+        roi_value = 0
+        roi_element = driver.find_element(By.XPATH, "//*[text()='7D Realized PnL']/following-sibling::div[1]")
+        if roi_element:
+            roi_text = roi_element.text.strip() 
+            roi_value = roi_text.split('%')[0] + '%'
+            print('roi =>', roi_value) 
         else:
             raise ValueError("ROI not found")
         
-        return {"roi": roi_value, "winrate": winrate_value}
+        return {
+            "roi": roi_value,
+            "winrate": winrate_value
+        }
 
     except Exception as e:
         print(f"Error scraping {wallet_address}: {str(e)}")
