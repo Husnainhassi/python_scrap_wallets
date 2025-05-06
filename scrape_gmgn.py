@@ -29,7 +29,7 @@ def get_roi_winrate(wallet_address):
             winrate_element = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "css-1vihibg")))
             winrate_text = winrate_element.text.strip()
             winrate_value = winrate_text.replace("%", "")
-            print('winrate =>', winrate_value)
+            print('Winrate =>', winrate_value)
         except Exception:
             print("Winrate not found")
         
@@ -41,7 +41,7 @@ def get_roi_winrate(wallet_address):
         if roi_element:
             roi_text = roi_element.text.strip() 
             roi_value = roi_text.split('%')[0] + '%'
-            print('roi =>', roi_value) 
+            print('ROI =>', roi_value) 
         else:
             print("ROI not found")
         
