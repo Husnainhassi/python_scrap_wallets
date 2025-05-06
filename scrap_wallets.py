@@ -125,7 +125,7 @@ def collect_traders_from_birdeye(token_address):
     return traders_data
 
 if __name__ == "__main__":
-    token_address = '5SrwudGa1RHndbveXW1obMvH51Gh9amRRuMoPdqZpump'
+    token_address = 'C8AjmccYUd5gYf8nf5KKYgr3zDNJ6UDHVVi312a2pump'
     traders_info = collect_traders_from_birdeye(token_address)
 
     if traders_info:

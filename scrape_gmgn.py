@@ -31,10 +31,11 @@ def get_roi_winrate(wallet_address):
             winrate_value = winrate_text.replace("%", "")
             print('winrate =>', winrate_value)
         except Exception:
-            raise ValueError("Winrate not found")
+            print("Winrate not found")
         
         time.sleep(1)
 
+        # ROI
         roi_value = 0
         roi_element = driver.find_element(By.XPATH, "//*[text()='7D Realized PnL']/following-sibling::div[1]")
         if roi_element:
@@ -42,7 +43,7 @@ def get_roi_winrate(wallet_address):
             roi_value = roi_text.split('%')[0] + '%'
             print('roi =>', roi_value) 
         else:
-            raise ValueError("ROI not found")
+            print("ROI not found")
         
         return {
             "roi": roi_value,
