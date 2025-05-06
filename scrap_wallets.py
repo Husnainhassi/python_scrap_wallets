@@ -7,6 +7,47 @@ from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 from scrape_gmgn import get_roi_winrate
 import time
+import mysql.connector
+from mysql.connector import Error
+
+# Setup MySQL database
+def setup_database():
+    """
+    Setup MySQL database with wallet_data table
+    """
+    try:
+        # Connect to MySQL server (adjust credentials as needed)
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="root",  # Change to your MySQL username
+            password="password"   # Change to your MySQL password
+        )
+        
+        if connection.is_connected():
+            cursor = connection.cursor()
+            
+            # Create database if it doesn't exist
+            cursor.execute("CREATE DATABASE IF NOT EXISTS wallet_scraper")
+            
+            # Switch to the database
+            cursor.execute("USE wallet_scraper")
+            
+            # Create wallet_data table
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS wallet_data (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                wallet_address VARCHAR(255),
+                ROI FLOAT,
+                Winrate FLOAT
+            )
+            """)
+            
+            print("Database setup successful")
+            return connection, cursor
+            
+    except Error as e:
+        print(f"Error connecting to MySQL: {e}")
+        return None, None
 
 # Setup Chrome driver
 service = Service(ChromeDriverManager().install())
@@ -46,13 +87,13 @@ def collect_traders_from_birdeye(token_address):
 
         print("Waiting for manual filter...")
         # Wait for manual filter
-        time.sleep(25)
+        time.sleep(5)
         print("Manual filter applying time ended.")
 
         pages_ended = 0
         page_num = 1
 
-        while pages_ended == 0:
+        while page_num <=1 :
             
             # Get table body rows
             rows = WebDriverWait(driver, 15).until(
@@ -77,7 +118,7 @@ def collect_traders_from_birdeye(token_address):
                             "Winrate": stats['winrate']
                         })
                         print(f"Collected: {trader_address} |")
-                except:
+                except Exception as e:
                     print(f"Error processing row: {e}")
                     traders_data.append({
                         "Trader": "",
@@ -129,9 +170,30 @@ if __name__ == "__main__":
     traders_info = collect_traders_from_birdeye(token_address)
 
     if traders_info:
-        df = pd.DataFrame(traders_info)
-        df.to_excel("traders_with_roi.xlsx", index=False)
+        # Save to Excel
+        # df = pd.DataFrame(traders_info)
+        # df.to_excel("traders_with_roi.xlsx", index=False)
         print(f"Saved {len(traders_info)} traders with ROI and Winrate to 'traders_with_roi.xlsx'.")
+        
+        # Save to MySQL database
+        connection, cursor = setup_database()
+        if connection and cursor:
+            try:
+                # Insert data into MySQL
+                for trader in traders_info:
+                    cursor.execute(
+                        "INSERT INTO wallet_data (wallet_address, ROI, Winrate) VALUES (%s, %s, %s)",
+                        (trader["Trader"], trader["ROI"], trader["Winrate"])
+                    )
+                
+                # Commit changes and close connection
+                connection.commit()
+                print(f"Saved {len(traders_info)} traders with ROI and Winrate to MySQL database 'wallet_scraper'.")
+            except Error as e:
+                print(f"Error saving to MySQL: {e}")
+            finally:
+                cursor.close()
+                connection.close()
     else:
         print("No trader links were collected.")
 
