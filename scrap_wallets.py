@@ -67,8 +67,8 @@ if __name__ == "__main__":
     # Setup Chrome driver
     service = Service(ChromeDriverManager().install())
     options = webdriver.ChromeOptions()
-    # options.add_argument("--start-maximized") # To open browser in real time
-    options.add_argument("--headless")  # Run in background
+    options.add_argument("--start-maximized") # To open browser in real time
+    # options.add_argument("--headless")  # Run in background
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
     driver = webdriver.Chrome(service=service, options=options)
