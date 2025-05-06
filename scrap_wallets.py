@@ -20,7 +20,7 @@ def setup_database():
         connection = mysql.connector.connect(
             host="localhost",
             user="root",  # Change to your MySQL username
-            password="password"   # Change to your MySQL password
+            password=""   # Change to your MySQL password
         )
         
         if connection.is_connected():
